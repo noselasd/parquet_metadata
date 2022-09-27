@@ -12,20 +12,17 @@ fn usage(progname: &str) {
     std::process::exit(1);
 }
 
-fn print_metedata(filename: &str) {
+fn print_metedata(filename: &str) -> Result<(), std::io::Error> {
     let reader_options = ReadOptionsBuilder::new().with_page_index().build();
-    let file = match File::open(filename) {
-        Ok(f) => f,
-        Err(why) => {
-            println!("Can't open {} : {}", filename, why);
-            return;
-        }
-    };
+    let file = File::open(filename)?;
+
     let reader = SerializedFileReader::new_with_options(file, reader_options).unwrap();
     let metadata = reader.metadata();
 
     println!("{} Meta Data:", filename);
     printer::print_parquet_metadata(&mut std::io::stdout(), metadata);
+
+    Ok(())
 }
 
 fn main() {
@@ -34,6 +31,8 @@ fn main() {
         usage(args[1].as_str())
     }
     for arg in &args[1..] {
-        print_metedata(arg);
+        if let Err(why) = print_metedata(arg) {
+            println!("Can't open {} : {}", arg, why);
+        }
     }
 }
