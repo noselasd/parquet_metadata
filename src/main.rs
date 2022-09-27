@@ -1,15 +1,17 @@
+use clap::Parser;
 use parquet::file::reader::FileReader;
 use parquet::file::serialized_reader::ReadOptionsBuilder;
 use parquet::file::serialized_reader::SerializedFileReader;
 use parquet::schema::printer;
-use std::env;
 use std::fs::File;
 
-fn usage(progname: &str) {
-    println!("Usage: {}  parquet-file1 parquet-file2 ...", progname);
-    println!("Prints out parquet metadata for each file");
-
-    std::process::exit(1);
+#[derive(Parser)]
+#[clap(version)]
+#[clap(about = "Prints out parquet metadata for each file")]
+struct Args {
+    #[clap(value_parser, required(true))]
+    #[clap(help = "parquet file(s)")]
+    files: Vec<String>,
 }
 
 fn print_metedata(filename: &str) -> Result<(), std::io::Error> {
@@ -26,11 +28,8 @@ fn print_metedata(filename: &str) -> Result<(), std::io::Error> {
 }
 
 fn main() {
-    let args = env::args().collect::<Vec<String>>();
-    if args.len() < 2 {
-        usage(args[1].as_str())
-    }
-    for arg in &args[1..] {
+    let flags = Args::parse();
+    for arg in &flags.files {
         if let Err(why) = print_metedata(arg) {
             println!("Can't open {} : {}", arg, why);
         }
