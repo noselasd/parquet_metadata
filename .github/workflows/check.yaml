@@ -13,4 +13,5 @@ jobs:
       - uses: actions-rs/clippy-check@v1
         name: Clippy check
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           args: --all-features
