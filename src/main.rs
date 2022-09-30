@@ -2,56 +2,50 @@ use clap::ArgGroup;
 use clap::Parser;
 use parquet::file::metadata::FileMetaData;
 use parquet::file::reader::FileReader;
-use parquet::file::serialized_reader::ReadOptionsBuilder;
-use parquet::file::serialized_reader::SerializedFileReader;
+use parquet::file::serialized_reader::{ReadOptionsBuilder, SerializedFileReader};
 use parquet::schema::printer;
 use parquet::schema::types::SchemaDescriptor;
 use std::fs::File;
 use std::io;
 
+fn find_arrow_schema(metadata: &FileMetaData) -> Option<&String> {
+    if let Some(kv_vec) = metadata.key_value_metadata() {
+        kv_vec
+            .iter()
+            .find(|&kv| kv.key == parquet::arrow::ARROW_SCHEMA_META_KEY)?
+            .value
+            .as_ref()
+    } else {
+        None
+    }
+}
+
 #[allow(unused_must_use)]
 fn print_arrow_schema(out: &mut dyn io::Write, metadata: &FileMetaData) {
-    let kv = match metadata.key_value_metadata() {
-        Some(x) => x,
-        None => {
-            writeln!(out, "File contains no arrow schema");
-            return;
-        }
-    };
-    let arrow_schema = kv
-        .iter()
-        .find(|&k| k.key == parquet::arrow::ARROW_SCHEMA_META_KEY);
+    if let Some(arrow_schema) = find_arrow_schema(metadata) {
+        let decoded = base64::decode(arrow_schema);
+        match decoded {
+            Ok(bytes) => {
+                let slice = if bytes[0..4] == [255u8; 4] {
+                    &bytes[8..]
+                } else {
+                    bytes.as_slice()
+                };
 
-    let v = match arrow_schema {
-        Some(k) => k.value.as_ref(),
-        None => {
-            writeln!(out, "File contains no arrow schema");
-            return;
-        }
-    };
-    writeln!(out, "Arrow schema:");
-    let empty = &String::new();
-    let arrow_schema = v.unwrap_or(empty);
-
-    let decoded = base64::decode(arrow_schema);
-    match decoded {
-        Ok(bytes) => {
-            let slice = if bytes[0..4] == [255u8; 4] {
-                &bytes[8..]
-            } else {
-                bytes.as_slice()
-            };
-
-            match arrow::ipc::root_as_message(slice) {
-                Ok(message) => writeln!(out, "Deoded arrow schema{:#?}", message),
-                Err(err) => writeln!(out, "Error {}", err),
-            };
-        }
-        Err(err) => {
-            writeln!(out, "Error {}", err);
-        }
-    };
+                match arrow::ipc::root_as_message(slice) {
+                    Ok(message) => writeln!(out, "Deoded arrow schema{:#?}", message),
+                    Err(err) => writeln!(out, "Error {}", err),
+                };
+            }
+            Err(err) => {
+                writeln!(out, "Error {}", err);
+            }
+        };
+    } else {
+        writeln!(out, "File contains no arrow schema");
+    }
 }
+
 #[allow(unused_must_use)]
 fn print_parquet_schema_descriptor(out: &mut dyn io::Write, schema_descr: &SchemaDescriptor) {
     writeln!(out, "{:#?}", schema_descr);
@@ -59,7 +53,7 @@ fn print_parquet_schema_descriptor(out: &mut dyn io::Write, schema_descr: &Schem
 fn print_metedata(filename: &str, info_type: InfoType) -> Result<(), std::io::Error> {
     let reader_options = ReadOptionsBuilder::new().with_page_index().build();
     let file = File::open(filename)?;
-    let reader = SerializedFileReader::new_with_options(file, reader_options).unwrap();
+    let reader = SerializedFileReader::new_with_options(file, reader_options)?;
     let metadata = reader.metadata();
 
     let output = &mut std::io::stdout();
