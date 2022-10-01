@@ -31,3 +31,8 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           args: --all-features
+
+      - name: Code format check
+        run: |
+          cargo fmt -- --check
+
