@@ -17,11 +17,11 @@ pub(crate) enum InfoType {
 
 fn find_arrow_schema(metadata: &FileMetaData) -> Option<&String> {
     if let Some(kv_vec) = metadata.key_value_metadata() {
-        kv_vec
-            .iter()
-            .find(|&kv| kv.key == parquet::arrow::ARROW_SCHEMA_META_KEY)?
-            .value
-            .as_ref()
+      kv_vec
+          .iter()
+          .find(|&kv| kv.key == parquet::arrow::ARROW_SCHEMA_META_KEY)?
+          .value
+          .as_ref()
     } else {
         None
     }
