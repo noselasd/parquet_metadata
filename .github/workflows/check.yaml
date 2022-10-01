@@ -13,12 +13,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup rust toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: nightly
-          components: clippy, rustfmt
-          override: true
       - name: Cargo Cache
         uses: actions/cache@v1
         with:
@@ -36,6 +30,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-target-${{ hashFiles('Cargo.toml') }}
             ${{ runner.os }}-cargo-target
+
+      - name: Setup rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          components: clippy, rustfmt
+          override: true
 
       - name: Build
         uses: actions-rs/cargo@v1
