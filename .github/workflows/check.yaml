@@ -15,7 +15,7 @@ jobs:
       - run: |
           cargo clippy --no-deps --message-format=short >clippy_output.txt 2>&1
 
-      - uses: LouisBrunner/checks-action@v1.1.1
+      - uses: LouisBrunner/checks-action@v1.3.1
         if: always()
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
