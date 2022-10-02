@@ -53,7 +53,8 @@ struct Args {
     #[clap(help = "parquet file(s)")]
     files: Vec<String>,
 }
-
+fn unused() {
+}
 fn main() {
     let args = Args::parse();
 
