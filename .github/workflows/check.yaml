@@ -19,5 +19,5 @@ jobs:
           name: Test XYZ
           conclusion: ${{ job.status }}
           output: |
-            {"summary":"${{ runner.name }" }}
+            {"summary":"${{ runner.name }}" }
 
