@@ -37,7 +37,7 @@ jobs:
           override: true
 
       - name: (Optionally) install cross compilation tools
-        if: ${{ matrix.use-cross 'true'}}
+        if: ${{ matrix.use-cross }}
         run: |
           rustup target add ${{ matrix.target }}
 
