@@ -10,19 +10,19 @@ jobs:
         include:
           - os: ubuntu-20.04
             target: x86_64-unknown-linux-gnu
-            use-cross: false
+            build_tool: cargo
 
           - os: ubuntu-20.04
             target: aarch64-unknown-linux-gnu
-            use-cross: true
+            build_tool: cross
 
           - os: windows-latest
             target: x86_64-pc-windows-msvc
-            use-cross: false
+            build_tool: cargo
 
           - os: macos-latest
             target: aarch64-apple-darwin
-            use-cross: true
+            build_tool: cross
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -37,21 +37,15 @@ jobs:
           override: true
 
       - name: (Optionally) install cross compilation tools
-        if: ${{ matrix.use-cross }}
+        if: ${{ matrix.build_tool == 'cross' }}
         run: |
           rustup target add ${{ matrix.target }}
 
-      - name: Build
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          use-cross: ${{ matrix.use-cross }}
-          args: --release --target ${{ matrix.target }}
-
-      - name: Upload
+      - name: Build and Upload
         uses: taiki-e/upload-rust-binary-action@v1
         with:
           bin: parquet_metadata
           leading_dir: true
+          target: ${{ matrix.target }}
           archive: $bin-$tag-$target
           token: ${{ secrets.GITHUB_TOKEN }}
