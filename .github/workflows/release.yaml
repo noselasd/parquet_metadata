@@ -32,13 +32,17 @@ jobs:
           components: clippy, rustfmt
           override: true
 
+      - name: (Optionally) install cross compilation tools
+        if: ${{ matrix.use_cross }}
+        run: |
+          rustup target add ${{ matrix.target }}
+
       - name: Build
         uses: actions-rs/cargo@v1
         with:
           command: build
           use-cross: ${{ matrix.use-cross }}
-          target: ${{ matrix.target }}
-          args: --release
+          args: --release --target ${{ matrix.target }}
 
       - name: Upload
         uses: taiki-e/upload-rust-binary-action@v1
