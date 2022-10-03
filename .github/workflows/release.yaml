@@ -5,6 +5,7 @@ on:
 jobs:
   upload-assets:
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: ubuntu-20.04
@@ -36,7 +37,7 @@ jobs:
           override: true
 
       - name: (Optionally) install cross compilation tools
-        if: ${{ matrix.use_cross }}
+        if: ${{ matrix.use-cross 'true'}}
         run: |
           rustup target add ${{ matrix.target }}
 
