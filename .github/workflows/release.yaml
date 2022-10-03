@@ -1,0 +1,51 @@
+on:
+  release:
+    types: [created]
+
+jobs:
+  upload-assets:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-20.04
+            target: x86_64-unknown-linux-gnu
+            build_tool: cargo
+
+          - os: ubuntu-20.04
+            target: aarch64-unknown-linux-gnu
+            build_tool: cross
+
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            build_tool: cargo
+
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            build_tool: cross
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          components: clippy, rustfmt
+          override: true
+
+      - name: (Optionally) install cross compilation tools
+        if: ${{ matrix.build_tool == 'cross' }}
+        run: |
+          rustup target add ${{ matrix.target }}
+
+      - name: Build and Upload
+        uses: taiki-e/upload-rust-binary-action@v1
+        with:
+          bin: parquet_metadata
+          leading_dir: true
+          target: ${{ matrix.target }}
+          archive: $bin-$tag-$target
+          token: ${{ secrets.GITHUB_TOKEN }}
