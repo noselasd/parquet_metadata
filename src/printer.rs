@@ -8,7 +8,7 @@ use std::io;
 
 #[derive(Clone, Debug)]
 pub(crate) enum InfoType {
-    All,
+    Parquet,
     Metadata,
     Schema,
     SchemaDescr,
@@ -74,7 +74,7 @@ pub(crate) fn print_metedata(filename: &str, info_type: InfoType) -> Result<(), 
             println!("File metadata for {}", filename);
             printer::print_file_metadata(output, metadata.file_metadata());
         }
-        InfoType::All => {
+        InfoType::Parquet => {
             println!("Metadata for  {}", filename);
             printer::print_parquet_metadata(output, metadata);
         }

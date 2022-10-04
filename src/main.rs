@@ -14,7 +14,7 @@ fn get_info_type(args: &Args) -> InfoType {
         (_, true, _, _) => InfoType::Schema,
         (_, _, true, _) => InfoType::SchemaDescr,
         (_, _, _, true) => InfoType::ArrowSchema,
-        _ => InfoType::All, // Default is --all
+        _ => InfoType::Parquet, // Default is --parquet
     }
 }
 
@@ -25,24 +25,24 @@ fn get_info_type(args: &Args) -> InfoType {
 #[clap(group(
     ArgGroup::new("info_type")
         .required(false)
-        .args(&["all","metadata", "schema", "schema-descr", "arrow-schema"]),
+        .args(&["parquet","metadata", "schema", "schema-descr", "arrow-schema"]),
 ))]
 #[clap(arg_required_else_help = true)]
 struct Args {
     #[clap(long)]
-    #[clap(help = "Print all info")]
-    all: bool,
+    #[clap(help = "Print all parquet metadata (default)")]
+    parquet: bool,
 
     #[clap(long)]
-    #[clap(help = "Print file metadata")]
+    #[clap(help = "Print file metadata only")]
     metadata: bool,
 
     #[clap(long)]
-    #[clap(help = "Print schema")]
+    #[clap(help = "Print parquet schema only")]
     schema: bool,
 
     #[clap(long)]
-    #[clap(help = "Print schema description")]
+    #[clap(help = "Print internal parquet schema description")]
     schema_descr: bool,
 
     #[clap(long)]
