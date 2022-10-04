@@ -1,7 +1,9 @@
 on:
   push:
+    paths: ['src/**', 'Cargo.*']
     branches:
       - main
+
   pull_request:
     types: [opened, synchronize, reopened]
 
