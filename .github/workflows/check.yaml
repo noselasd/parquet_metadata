@@ -1,6 +1,6 @@
 on:
   push:
-    paths: ['src/**', 'Cargo.*']
+    paths: ["src/**", "Cargo.*"]
     branches:
       - main
 
@@ -53,7 +53,7 @@ jobs:
           args: --all-features --no-deps
 
       - name: Code format check
-        uses: LoliGothick/rustfmt-check@v0.2
+        uses: actions-rust-lang/rustfmt@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           flags: --all
