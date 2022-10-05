@@ -40,7 +40,7 @@ fn print_arrow_schema(out: &mut dyn io::Write, metadata: &FileMetaData) {
                 };
 
                 match arrow::ipc::root_as_message(slice) {
-                    Ok(message) => writeln!(out, "Deoded arrow schema{:#?}", message),
+                    Ok(message) => writeln!(out, "Decoded arrow schema{:#?}", message),
                     Err(err) => writeln!(out, "Error {}", err),
                 };
             }

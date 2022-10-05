@@ -1,6 +1,6 @@
 on:
   push:
-    paths: ["src/**", "Cargo.*"]
+    paths: ["src/**", "Cargo.*", ".github/**"]
     branches:
       - main
 
@@ -54,6 +54,3 @@ jobs:
 
       - name: Code format check
         uses: actions-rust-lang/rustfmt@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          flags: --all
