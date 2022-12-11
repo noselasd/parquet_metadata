@@ -1,4 +1,6 @@
-use parquet::file::metadata::{FileMetaData, ParquetMetaData, RowGroupMetaData, ColumnChunkMetaData};
+use parquet::file::metadata::{
+    ColumnChunkMetaData, FileMetaData, ParquetMetaData, RowGroupMetaData,
+};
 use parquet::file::reader::FileReader;
 use parquet::file::serialized_reader::{ReadOptionsBuilder, SerializedFileReader};
 use parquet::schema::printer::{self, print_file_metadata};
@@ -59,7 +61,7 @@ fn print_parquet_schema_descriptor(out: &mut dyn io::Write, schema_descr: &Schem
 }
 
 #[allow(unused_must_use)]
-fn print_column_chunk_metadata(out : &mut dyn io::Write, cc_metadata : &ColumnChunkMetaData) {
+fn print_column_chunk_metadata(out: &mut dyn io::Write, cc_metadata: &ColumnChunkMetaData) {
     writeln!(out, "column type: {}", cc_metadata.column_type());
     writeln!(out, "column path: {}", cc_metadata.column_path());
     let encoding_strs: Vec<_> = cc_metadata
