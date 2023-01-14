@@ -1,3 +1,4 @@
+use base64::prelude::*;
 use parquet::file::metadata::{
     ColumnChunkMetaData, FileMetaData, ParquetMetaData, RowGroupMetaData,
 };
@@ -32,7 +33,7 @@ fn find_arrow_schema(metadata: &FileMetaData) -> Option<&String> {
 #[allow(unused_must_use)]
 fn print_arrow_schema(out: &mut dyn io::Write, metadata: &FileMetaData) {
     if let Some(arrow_schema) = find_arrow_schema(metadata) {
-        let decoded = base64::decode(arrow_schema);
+        let decoded = BASE64_STANDARD.decode(arrow_schema);
         match decoded {
             Ok(bytes) => {
                 let slice = if bytes[0..4] == [255u8; 4] {
