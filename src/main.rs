@@ -21,11 +21,10 @@ fn get_info_type(args: &Args) -> InfoType {
 #[derive(Parser)]
 #[clap(version)]
 #[clap(about = "Prints out parquet metadata for each file")]
-#[clap()]
 #[clap(group(
     ArgGroup::new("info_type")
         .required(false)
-        .args(&["parquet","metadata", "schema", "schema-descr", "arrow-schema"]),
+        .args(&["parquet","metadata", "schema", "schema_descr", "arrow_schema"]),
 ))]
 #[clap(arg_required_else_help = true)]
 struct Args {
