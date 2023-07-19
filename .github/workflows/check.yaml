@@ -40,12 +40,6 @@ jobs:
           components: clippy, rustfmt
           override: true
 
-      - name: Build
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --release
-
       - name: Clippy check
         uses: actions-rs/clippy-check@v1
         with:
@@ -54,3 +48,10 @@ jobs:
 
       - name: Code format check
         uses: actions-rust-lang/rustfmt@v1
+
+      - name: Build
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release
+
