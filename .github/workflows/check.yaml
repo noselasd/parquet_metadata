@@ -41,7 +41,7 @@ jobs:
           override: true
 
       - name: Clippy check
-        run: clippy --all-features --no-deps
+        run: cargo clippy --all-features --no-deps
 
       - name: Code format check
         run: rustfmt --check
