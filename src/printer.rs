@@ -126,6 +126,26 @@ fn print_column_chunk_metadata(out: &mut dyn io::Write, cc_metadata: &ColumnChun
         None => "N/A".to_owned(),
         Some(cil) => cil.to_string(),
     };
+
+    writeln!(
+        out,
+        "number of values in chunk: {}",
+        cc_metadata.num_values()
+    );
+    if let Some(stats) = cc_metadata.statistics() {
+        writeln!(
+            out,
+            "min-max is backwards compatible: {}",
+            stats.is_min_max_backwards_compatible()
+        );
+        writeln!(
+            out,
+            "min-max is deprecated: {}",
+            stats.is_min_max_deprecated()
+        );
+        writeln!(out, "min is exact: {}", stats.min_is_exact());
+        writeln!(out, "max is exact: {}", stats.max_is_exact());
+    }
     writeln!(out, "column index length: {}", column_index_length_str);
     writeln!(out);
 }
