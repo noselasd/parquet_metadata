@@ -133,6 +133,11 @@ fn print_column_chunk_metadata(out: &mut dyn io::Write, cc_metadata: &ColumnChun
 #[allow(unused_must_use)]
 fn print_row_group_metadata(out: &mut dyn io::Write, rg_metadata: &RowGroupMetaData) {
     writeln!(out, "total byte size: {}", rg_metadata.total_byte_size());
+    writeln!(
+        out,
+        "compressed byte size: {}",
+        rg_metadata.compressed_size()
+    );
     writeln!(out, "num of rows: {}", rg_metadata.num_rows());
     writeln!(out);
     writeln!(out, "num of columns: {}", rg_metadata.num_columns());
