@@ -27,25 +27,20 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup rust toolchain
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
           components: clippy, rustfmt
-          override: true
+          targets: ${{ matrix.target }}
 
-      - name: (Optionally) install cross compilation tools
-        if: ${{ matrix.build_tool == 'cross' }}
-        run: |
-          rustup target add ${{ matrix.target }}
-
-      - name: Build and Upload
-        uses: taiki-e/upload-rust-binary-action@v1
-        with:
-          bin: parquet_metadata
-          leading_dir: true
-          target: ${{ matrix.target }}
-          archive: $bin-$tag-$target
-          token: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Build and Upload
+      #   uses: taiki-e/upload-rust-binary-action@v1
+      #   with:
+      #     bin: parquet_metadata
+      #     leading_dir: true
+      #     target: ${{ matrix.target }}
+      #     archive: $bin-$tag-$target
+      #     token: ${{ secrets.GITHUB_TOKEN }}
