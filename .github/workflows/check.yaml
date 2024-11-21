@@ -44,7 +44,7 @@ jobs:
         run: cargo clippy --all-features --no-deps
 
       - name: Code format check
-        run: rustfmt --check
+        uses: actions-rust-lang/rustfmt@v1
 
       - name: Build
         run: cargo build --release
