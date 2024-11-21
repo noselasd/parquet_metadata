@@ -3,6 +3,7 @@ on:
     types: [created]
   workflow_dispatch:
 
+name: Build Release
 jobs:
   upload-assets:
     strategy:
@@ -37,11 +38,11 @@ jobs:
           components: clippy, rustfmt
           targets: ${{ matrix.target }}
 
-      # - name: Build and Upload
-      #   uses: taiki-e/upload-rust-binary-action@v1
-      #   with:
-      #     bin: parquet_metadata
-      #     leading_dir: true
-      #     target: ${{ matrix.target }}
-      #     archive: $bin-$tag-$target
-      #     token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and Upload
+        uses: taiki-e/upload-rust-binary-action@v1
+        with:
+          bin: parquet_metadata
+          leading_dir: true
+          target: ${{ matrix.target }}
+          archive: $bin-$tag-$target
+          token: ${{ secrets.GITHUB_TOKEN }}
