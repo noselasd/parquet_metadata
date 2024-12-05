@@ -89,8 +89,7 @@ fn print_column_chunk_metadata(
         .map(|e| format!("{}", e))
         .collect();
     add_row(&mut table, "encodings", encoding_strs.join(" "));
-    let file_path_str = cc_metadata.file_path().unwrap_or("N/A");
-    add_row(&mut table, "file path", file_path_str);
+    add_row_opt(&mut table, "file path", cc_metadata.file_path());
     add_row(&mut table, "file offset", cc_metadata.file_offset());
     add_row(&mut table, "num of values", cc_metadata.num_values());
     add_row(
@@ -181,11 +180,7 @@ fn print_row_group_metadata(
     let mut table = Table::new();
     table.set_header(vec![format!("row group {}", group_num)]);
 
-    add_row(
-        &mut table,
-        "total byte size: {}",
-        rg_metadata.total_byte_size(),
-    );
+    add_row(&mut table, "total byte size", rg_metadata.total_byte_size());
     add_row(
         &mut table,
         "compressed byte size",
