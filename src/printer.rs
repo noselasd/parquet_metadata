@@ -1,14 +1,14 @@
 use base64::prelude::*;
+use comfy_table::Table;
 use parquet::file::metadata::{
     ColumnChunkMetaData, FileMetaData, ParquetMetaData, RowGroupMetaData,
 };
 use parquet::file::reader::FileReader;
 use parquet::file::serialized_reader::{ReadOptionsBuilder, SerializedFileReader};
-use parquet::schema::printer::{self, print_file_metadata};
+use parquet::schema::printer::{self, print_schema};
 use parquet::schema::types::SchemaDescriptor;
 use std::fs::File;
 use std::io;
-
 #[derive(Clone, Debug)]
 pub(crate) enum InfoType {
     Parquet,
@@ -28,6 +28,17 @@ fn find_arrow_schema(metadata: &FileMetaData) -> Option<&String> {
     } else {
         None
     }
+}
+
+fn add_row<T: ToString>(table: &mut Table, name: &str, val: T) {
+    table.add_row(vec![name, &val.to_string()]);
+}
+fn add_row_opt<T: ToString>(table: &mut Table, name: &str, val: Option<T>) {
+    let v = match val {
+        Some(x) => x.to_string(),
+        None => "N/A".to_owned(),
+    };
+    table.add_row(vec![name, &v]);
 }
 
 #[allow(unused_must_use)]
@@ -62,110 +73,131 @@ fn print_parquet_schema_descriptor(out: &mut dyn io::Write, schema_descr: &Schem
 }
 
 #[allow(unused_must_use)]
-fn print_column_chunk_metadata(out: &mut dyn io::Write, cc_metadata: &ColumnChunkMetaData) {
-    writeln!(out, "column type: {}", cc_metadata.column_type());
-    writeln!(out, "column path: {}", cc_metadata.column_path());
+fn print_column_chunk_metadata(
+    out: &mut dyn io::Write,
+    cc_metadata: &ColumnChunkMetaData,
+    col_no: usize,
+) {
+    let mut table = Table::new();
+    table.add_row(vec![format!("column {}", col_no)]);
+    add_row(&mut table, "column type", cc_metadata.column_type());
+
+    add_row(&mut table, "column path", cc_metadata.column_path());
     let encoding_strs: Vec<_> = cc_metadata
         .encodings()
         .iter()
         .map(|e| format!("{}", e))
         .collect();
-    writeln!(out, "encodings: {}", encoding_strs.join(" "));
+    add_row(&mut table, "encodings", encoding_strs.join(" "));
     let file_path_str = cc_metadata.file_path().unwrap_or("N/A");
-    writeln!(out, "file path: {}", file_path_str);
-    writeln!(out, "file offset: {}", cc_metadata.file_offset());
-    writeln!(out, "num of values: {}", cc_metadata.num_values());
-    writeln!(
-        out,
-        "total compressed size (in bytes): {}",
-        cc_metadata.compressed_size()
+    add_row(&mut table, "file path", file_path_str);
+    add_row(&mut table, "file offset", cc_metadata.file_offset());
+    add_row(&mut table, "num of values", cc_metadata.num_values());
+    add_row(
+        &mut table,
+        "total compressed size (in bytes)",
+        cc_metadata.compressed_size(),
     );
-    writeln!(
-        out,
-        "total uncompressed size (in bytes): {}",
-        cc_metadata.uncompressed_size()
+    add_row(
+        &mut table,
+        "total uncompressed size (in bytes)",
+        cc_metadata.uncompressed_size(),
     );
-    writeln!(out, "compression: {}", cc_metadata.compression());
-    writeln!(out, "data page offset: {}", cc_metadata.data_page_offset());
-    let index_page_offset_str = match cc_metadata.index_page_offset() {
-        None => "N/A".to_owned(),
-        Some(ipo) => ipo.to_string(),
-    };
-    writeln!(out, "index page offset: {}", index_page_offset_str);
-    let dict_page_offset_str = match cc_metadata.dictionary_page_offset() {
-        None => "N/A".to_owned(),
-        Some(dpo) => dpo.to_string(),
-    };
-    writeln!(out, "dictionary page offset: {}", dict_page_offset_str);
-    let statistics_str = match cc_metadata.statistics() {
-        None => "N/A".to_owned(),
-        Some(stats) => stats.to_string(),
-    };
-    writeln!(out, "statistics: {}", statistics_str);
-    let bloom_filter_offset_str = match cc_metadata.bloom_filter_offset() {
-        None => "N/A".to_owned(),
-        Some(bfo) => bfo.to_string(),
-    };
-    writeln!(out, "bloom filter offset: {}", bloom_filter_offset_str);
-    let offset_index_offset_str = match cc_metadata.offset_index_offset() {
-        None => "N/A".to_owned(),
-        Some(oio) => oio.to_string(),
-    };
-    writeln!(out, "offset index offset: {}", offset_index_offset_str);
-    let offset_index_length_str = match cc_metadata.offset_index_length() {
-        None => "N/A".to_owned(),
-        Some(oil) => oil.to_string(),
-    };
-    writeln!(out, "offset index length: {}", offset_index_length_str);
-    let column_index_offset_str = match cc_metadata.column_index_offset() {
-        None => "N/A".to_owned(),
-        Some(cio) => cio.to_string(),
-    };
-    writeln!(out, "column index offset: {}", column_index_offset_str);
-    let column_index_length_str = match cc_metadata.column_index_length() {
-        None => "N/A".to_owned(),
-        Some(cil) => cil.to_string(),
-    };
-
-    writeln!(
-        out,
-        "number of values in chunk: {}",
-        cc_metadata.num_values()
+    add_row(&mut table, "compression", cc_metadata.compression());
+    add_row(
+        &mut table,
+        "data page offset",
+        cc_metadata.data_page_offset(),
+    );
+    add_row_opt(
+        &mut table,
+        "index page offset",
+        cc_metadata.index_page_offset(),
+    );
+    add_row_opt(
+        &mut table,
+        "dictionary page offset",
+        cc_metadata.dictionary_page_offset(),
+    );
+    add_row_opt(
+        &mut table,
+        "bloom filter offset",
+        cc_metadata.bloom_filter_offset(),
+    );
+    add_row_opt(
+        &mut table,
+        "offset index offset",
+        cc_metadata.offset_index_offset(),
+    );
+    add_row_opt(
+        &mut table,
+        "offset index length",
+        cc_metadata.offset_index_length(),
+    );
+    add_row_opt(
+        &mut table,
+        "column index offset",
+        cc_metadata.column_index_offset(),
+    );
+    add_row_opt(
+        &mut table,
+        "column index length",
+        cc_metadata.column_index_length(),
+    );
+    add_row(
+        &mut table,
+        "number of values in chunk",
+        cc_metadata.num_values(),
     );
     if let Some(stats) = cc_metadata.statistics() {
-        writeln!(
-            out,
-            "min-max is backwards compatible: {}",
-            stats.is_min_max_backwards_compatible()
+        add_row_opt(&mut table, "distinct count", stats.distinct_count_opt());
+        add_row_opt(&mut table, "null count", stats.null_count_opt());
+        add_row(&mut table, "physical type", stats.physical_type());
+        add_row(
+            &mut table,
+            "min-max is backwards compatible",
+            stats.is_min_max_backwards_compatible(),
         );
-        writeln!(
-            out,
-            "min-max is deprecated: {}",
-            stats.is_min_max_deprecated()
+
+        add_row(
+            &mut table,
+            "min-max is deprecated",
+            stats.is_min_max_deprecated(),
         );
-        writeln!(out, "min is exact: {}", stats.min_is_exact());
-        writeln!(out, "max is exact: {}", stats.max_is_exact());
+        add_row(&mut table, "min is exact", stats.min_is_exact());
+        add_row(&mut table, "max is exact", stats.max_is_exact());
     }
-    writeln!(out, "column index length: {}", column_index_length_str);
+
+    writeln!(out, "{table}");
     writeln!(out);
 }
 
 #[allow(unused_must_use)]
-fn print_row_group_metadata(out: &mut dyn io::Write, rg_metadata: &RowGroupMetaData) {
-    writeln!(out, "total byte size: {}", rg_metadata.total_byte_size());
-    writeln!(
-        out,
-        "compressed byte size: {}",
-        rg_metadata.compressed_size()
+fn print_row_group_metadata(
+    out: &mut dyn io::Write,
+    rg_metadata: &RowGroupMetaData,
+    group_num: usize,
+) {
+    let mut table = Table::new();
+    table.add_row(vec![format!("row group {}", group_num)]);
+
+    add_row(
+        &mut table,
+        "total byte size: {}",
+        rg_metadata.total_byte_size(),
     );
-    writeln!(out, "num of rows: {}", rg_metadata.num_rows());
-    writeln!(out);
-    writeln!(out, "num of columns: {}", rg_metadata.num_columns());
-    writeln!(out, "columns: ");
+    add_row(
+        &mut table,
+        "compressed byte size",
+        rg_metadata.compressed_size(),
+    );
+    add_row(&mut table, "num of rows", rg_metadata.num_rows());
+    add_row(&mut table, "num of columns", rg_metadata.num_columns());
+
+    write!(out, "{table}\ncolumns:");
     for (i, cc) in rg_metadata.columns().iter().enumerate() {
         writeln!(out);
-        writeln!(out, "column {}:", i);
-        print_column_chunk_metadata(out, cc);
+        print_column_chunk_metadata(out, cc, i);
     }
 }
 
@@ -174,11 +206,33 @@ fn print_parquet_metadata(out: &mut dyn io::Write, metadata: &ParquetMetaData) {
     print_file_metadata(out, metadata.file_metadata());
     writeln!(out);
     writeln!(out, "number of row groups: {}", metadata.num_row_groups());
-    writeln!(out);
     for (i, rg) in metadata.row_groups().iter().enumerate() {
-        writeln!(out, "row group {}:", i);
-        print_row_group_metadata(out, rg);
+        writeln!(out);
+        print_row_group_metadata(out, rg, i);
     }
+}
+
+#[allow(unused_must_use)]
+pub fn print_file_metadata(out: &mut dyn io::Write, file_metadata: &FileMetaData) {
+    let mut table = Table::new();
+    add_row(&mut table, "version", file_metadata.version());
+    add_row(&mut table, "num of rows", file_metadata.num_rows());
+    add_row_opt(&mut table, "created by", file_metadata.created_by());
+
+    writeln!(out, "{table}");
+    if let Some(metadata) = file_metadata.key_value_metadata() {
+        writeln!(out, "metadata:");
+        for kv in metadata.iter() {
+            writeln!(
+                out,
+                "  {}: {}",
+                &kv.key,
+                kv.value.as_ref().unwrap_or(&"".to_owned())
+            );
+        }
+    }
+    let schema = file_metadata.schema();
+    print_schema(out, schema);
 }
 
 #[allow(unused_must_use)]
