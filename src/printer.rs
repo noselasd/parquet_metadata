@@ -79,7 +79,7 @@ fn print_column_chunk_metadata(
     col_no: usize,
 ) {
     let mut table = Table::new();
-    table.add_row(vec![format!("column {}", col_no)]);
+    table.set_header(vec![format!("column {}", col_no)]);
     add_row(&mut table, "column type", cc_metadata.column_type());
 
     add_row(&mut table, "column path", cc_metadata.column_path());
@@ -179,7 +179,7 @@ fn print_row_group_metadata(
     group_num: usize,
 ) {
     let mut table = Table::new();
-    table.add_row(vec![format!("row group {}", group_num)]);
+    table.set_header(vec![format!("row group {}", group_num)]);
 
     add_row(
         &mut table,
@@ -194,7 +194,7 @@ fn print_row_group_metadata(
     add_row(&mut table, "num of rows", rg_metadata.num_rows());
     add_row(&mut table, "num of columns", rg_metadata.num_columns());
 
-    write!(out, "{table}\ncolumns:");
+    writeln!(out, "{table}\n\ncolumns:");
     for (i, cc) in rg_metadata.columns().iter().enumerate() {
         writeln!(out);
         print_column_chunk_metadata(out, cc, i);
