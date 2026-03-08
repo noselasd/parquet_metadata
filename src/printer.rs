@@ -85,7 +85,6 @@ fn print_column_chunk_metadata(
     add_row(&mut table, "column path", cc_metadata.column_path());
     let encoding_strs: Vec<_> = cc_metadata
         .encodings()
-        .iter()
         .map(|e| format!("{}", e))
         .collect();
     add_row(&mut table, "encodings", encoding_strs.join(" "));
